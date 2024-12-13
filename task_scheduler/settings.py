@@ -31,7 +31,9 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
-INSTALLED_APPS = []
+INSTALLED_APPS = [
+    "webhook_timer",
+]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
