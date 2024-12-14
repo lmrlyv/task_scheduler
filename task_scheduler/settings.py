@@ -11,7 +11,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-from constants import IS_DEV, DJANGO_SECRET_KEY
+
+from task_scheduler.constants import DJANGO_SECRET_KEY, IS_DEV
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

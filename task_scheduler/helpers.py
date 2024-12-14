@@ -1,4 +1,5 @@
 from os import getenv
+
 from task_scheduler.exceptions import ConfigError
 
 
