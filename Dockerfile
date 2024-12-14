@@ -2,25 +2,25 @@
 FROM python:3.13.1-slim
 
 ARG ENVIRONMENT
-ARG APP_PATH="/task_scheduler"
+ARG ROOT_PATH="/task_scheduler"
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PIPENV_VENV_IN_PROJECT=1
+ENV PYTHONPATH=${ROOT_PATH}/task_scheduler
+ENV ENVIRONMENT=${ENVIRONMENT}
+
+# Check if ENVIRONMENT is set
+RUN [ -n "$ENVIRONMENT" ] || (echo "ERROR: The build-arg 'ENVIRONMENT' is not set!" && exit 1)
 
 RUN pip install --upgrade pip
 RUN pip install pipenv
 
-COPY task_scheduler ${APP_PATH}/task_scheduler
-COPY manage.py ${APP_PATH}/
-COPY Pipfile ${APP_PATH}/
-COPY Pipfile.lock ${APP_PATH}/
-COPY pyproject.toml ${APP_PATH}/
+COPY task_scheduler ${ROOT_PATH}/task_scheduler
+COPY pyproject.toml Pipfile Pipfile.lock manage.py ${ROOT_PATH}/
 
-WORKDIR /task_scheduler
-
-ENV PYTHONPATH=${APP_PATH}
+WORKDIR ${ROOT_PATH}
 
 RUN [ "${ENVIRONMENT}" == "dev" ] && pipenv install --dev || pipenv install
 
-CMD pipenv run python manage.py runserver 0.0.0.0:8000
+CMD ["pipenv", "run", "python", "manage.py", "runserver", "0.0.0.0:8000"]

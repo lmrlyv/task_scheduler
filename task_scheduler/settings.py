@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 
-from task_scheduler.constants import DJANGO_SECRET_KEY, IS_DEV
+from task_scheduler.constants import DJANGO_SECRET_KEY, IS_DEBUG_ON
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = DJANGO_SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = IS_DEV
+DEBUG = IS_DEBUG_ON
 
 ALLOWED_HOSTS = []
 
