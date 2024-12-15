@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 
-from task_scheduler.constants import (
+from task_scheduler.utils.constants import (
     CELERY_BROKER_HOST,
     CELERY_BROKER_PASSWORD,
     CELERY_BROKER_PORT,

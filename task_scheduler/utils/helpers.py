@@ -1,6 +1,6 @@
 from os import getenv
 
-from task_scheduler.exceptions import ConfigError
+from task_scheduler.utils.exceptions import ConfigError
 
 
 def get_env_var(env_var_name: str, default: str = "", required: bool = False) -> str:
