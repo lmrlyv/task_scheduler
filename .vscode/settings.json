@@ -1,4 +1,5 @@
 {
+    "python.defaultInterpreterPath": ".venv/bin/python",
     "editor.defaultFormatter": "ms-python.black-formatter",
     "[python]": {
         "editor.formatOnSave": true,
@@ -6,5 +7,5 @@
             "source.organizeImports": "explicit",
         }
     },
-    "isort.importStrategy": "fromEnvironment"
+    "isort.importStrategy": "fromEnvironment",
 }
