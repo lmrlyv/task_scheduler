@@ -1,11 +1,15 @@
 {
     "python.defaultInterpreterPath": ".venv/bin/python",
-    "editor.defaultFormatter": "ms-python.black-formatter",
-    "[python]": {
-        "editor.formatOnSave": true,
-        "editor.codeActionsOnSave": {
-            "source.organizeImports": "explicit",
-        }
-    },
-    "isort.importStrategy": "fromEnvironment",
+    "emeraldwalk.runonsave": {
+        "commands": [
+            {
+                "match": ".*\\.py$",
+                "cmd": ".venv/bin/python -m black ${file}"
+            },
+            {
+                "match": ".*\\.py$",
+                "cmd": ".venv/bin/python -m isort ${file}"
+            }
+        ]
+    }
 }
