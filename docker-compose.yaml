@@ -1,5 +1,18 @@
+x-django-app-env: &django-app-env
+  environment:
+    - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+    - CELERY_BROKER_HOST=${CELERY_BROKER_HOST}
+    - CELERY_BROKER_PORT=${CELERY_BROKER_PORT}
+    - CELERY_BROKER_USER=${CELERY_BROKER_USER}
+    - CELERY_BROKER_PASSWORD=${CELERY_BROKER_PASSWORD}
+    - DB_HOST=${DB_HOST}
+    - DB_PORT=${DB_PORT}
+    - DB_NAME=${DB_NAME}
+    - DB_USER=${DB_USER}
+    - DB_PASSWORD=${DB_PASSWORD}
+
 services:
-  django_web:
+  web:
     build:
       context: .
       args:
@@ -8,10 +21,7 @@ services:
     container_name: django_web
     ports:
       - "8000:8000"
-    environment:
-      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
-      - DATABASE_URL=mysql://root:@db:4000/your_database
-      - CELERY_BROKER_URL=amqp://rabbitmq:5672/
+    <<: *django-app-env
     volumes:
       - .:/task_scheduler
     depends_on:
@@ -22,14 +32,11 @@ services:
     image: django_web:dev
     container_name: celery_worker
     command: celery -A task_scheduler worker --loglevel=info
-    environment:
-      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
-      - CELERY_BROKER_URL=amqp://rabbitmq:5672/
-      - DATABASE_URL=mysql://root:@db:4000/your_database
+    <<: *django-app-env
     depends_on:
-      - django_web
+      - web
     volumes:
-      - .:/app
+      - .:/task_scheduler
 
   db:
     image: pingcap/tidb:v7.1.6
@@ -37,9 +44,10 @@ services:
     ports:
       - "4000:4000"
     environment:
-      - MYSQL_ROOT_PASSWORD=qwerty
-      - MYSQL_USER=test
-      - MYSQL_PASSWORD=test
+      - MYSQL_ROOT_PASSWORD=test
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
       - TZ=UTC
 
   rabbitmq:
@@ -49,5 +57,5 @@ services:
       - "5672:5672"
       - "15672:15672"
     environment:
-      - RABBITMQ_DEFAULT_USER=test
-      - RABBITMQ_DEFAULT_PASS=test
+      - RABBITMQ_DEFAULT_USER=${CELERY_BROKER_USER}
+      - RABBITMQ_DEFAULT_PASS=${CELERY_BROKER_PASSWORD}

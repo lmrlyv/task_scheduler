@@ -12,7 +12,19 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 
-from task_scheduler.constants import DJANGO_SECRET_KEY, IS_DEBUG_ON
+from task_scheduler.constants import (
+    CELERY_BROKER_HOST,
+    CELERY_BROKER_PASSWORD,
+    CELERY_BROKER_PORT,
+    CELERY_BROKER_USER,
+    DB_HOST,
+    DB_NAME,
+    DB_PASSWORD,
+    DB_PORT,
+    DB_USER,
+    DJANGO_SECRET_KEY,
+    IS_DEBUG_ON,
+)
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -50,7 +62,10 @@ WSGI_APPLICATION = "task_scheduler.wsgi.application"
 
 # Celery configuration
 
-CELERY_BROKER_URL = "amqp://rabbitmq:5672/"
+CELERY_BROKER_URL = (
+    f"amqp://{CELERY_BROKER_USER}:{CELERY_BROKER_PASSWORD}@"
+    f"{CELERY_BROKER_HOST}:{CELERY_BROKER_PORT}/"
+)
 
 
 # Database
@@ -58,8 +73,12 @@ CELERY_BROKER_URL = "amqp://rabbitmq:5672/"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.mysql",
+        "HOST": DB_HOST,
+        "PORT": DB_PORT,
+        "NAME": DB_NAME,
+        "USER": DB_USER,
+        "PASSWORD": DB_PASSWORD,
     }
 }
 
