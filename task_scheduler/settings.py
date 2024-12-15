@@ -55,6 +55,10 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+REST_FRAMEWORK = {
+    "EXCEPTION_HANDLER": "task_scheduler.utils.exception_handler.custom_exception_handler"
+}
+
 ROOT_URLCONF = "task_scheduler.urls"
 
 WSGI_APPLICATION = "task_scheduler.wsgi.application"
