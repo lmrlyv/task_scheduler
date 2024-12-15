@@ -6,6 +6,8 @@ name = "pypi"
 [packages]
 djangorestframework = "==3.15.2"
 celery = "==5.4.0"
+requests = "==2.32.3"
+mysqlclient = "*"
 
 [dev-packages]
 flake8 = "*"

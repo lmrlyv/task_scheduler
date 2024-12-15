@@ -13,8 +13,9 @@ ENV ENVIRONMENT=${ENVIRONMENT}
 # Check if ENVIRONMENT is set
 RUN [ -n "$ENVIRONMENT" ] || (echo "ERROR: The build-arg 'ENVIRONMENT' is not set!" && exit 1)
 
-RUN pip install --upgrade pip
-RUN pip install pipenv
+RUN apt update; apt install -y python3-dev default-libmysqlclient-dev build-essential pkg-config
+
+RUN pip install --upgrade pip; pip install pipenv
 
 COPY task_scheduler ${ROOT_PATH}/task_scheduler
 COPY pyproject.toml Pipfile Pipfile.lock manage.py ${ROOT_PATH}/
