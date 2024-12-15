@@ -1,0 +1,53 @@
+services:
+  django_web:
+    build:
+      context: .
+      args:
+        - ENVIRONMENT=dev
+    image: django_web:dev
+    container_name: django_web
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - DATABASE_URL=mysql://root:@db:4000/your_database
+      - CELERY_BROKER_URL=amqp://rabbitmq:5672/
+    volumes:
+      - .:/task_scheduler
+    depends_on:
+      - db
+      - rabbitmq
+
+  celery:
+    image: django_web:dev
+    container_name: celery_worker
+    command: celery -A task_scheduler worker --loglevel=info
+    environment:
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - CELERY_BROKER_URL=amqp://rabbitmq:5672/
+      - DATABASE_URL=mysql://root:@db:4000/your_database
+    depends_on:
+      - django_web
+    volumes:
+      - .:/app
+
+  db:
+    image: pingcap/tidb:v7.1.6
+    container_name: tidb
+    ports:
+      - "4000:4000"
+    environment:
+      - MYSQL_ROOT_PASSWORD=qwerty
+      - MYSQL_USER=test
+      - MYSQL_PASSWORD=test
+      - TZ=UTC
+
+  rabbitmq:
+    image: rabbitmq:4.0.4-management-alpine
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=test
+      - RABBITMQ_DEFAULT_PASS=test

@@ -7,7 +7,7 @@ ARG ROOT_PATH="/task_scheduler"
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PIPENV_VENV_IN_PROJECT=1
-ENV PYTHONPATH=${ROOT_PATH}/task_scheduler
+ENV PYTHONPATH=${ROOT_PATH}
 ENV ENVIRONMENT=${ENVIRONMENT}
 
 # Check if ENVIRONMENT is set
@@ -21,6 +21,6 @@ COPY pyproject.toml Pipfile Pipfile.lock manage.py ${ROOT_PATH}/
 
 WORKDIR ${ROOT_PATH}
 
-RUN [ "${ENVIRONMENT}" == "dev" ] && pipenv install --dev || pipenv install
+RUN [ "${ENVIRONMENT}" == "dev" ] && pipenv install --dev --system || pipenv install --system
 
-CMD ["pipenv", "run", "python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

@@ -34,7 +34,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    "webhook_timer",
+    "task_scheduler.webhook_timer",
 ]
 
 MIDDLEWARE = [
@@ -46,6 +46,11 @@ MIDDLEWARE = [
 ROOT_URLCONF = "task_scheduler.urls"
 
 WSGI_APPLICATION = "task_scheduler.wsgi.application"
+
+
+# Celery configuration
+
+CELERY_BROKER_URL = "amqp://rabbitmq:5672/"
 
 
 # Database
