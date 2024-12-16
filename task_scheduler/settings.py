@@ -46,6 +46,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    "django.contrib.contenttypes",
+    "django.contrib.auth",
     "task_scheduler.webhook_timer",
 ]
 
@@ -59,10 +61,33 @@ REST_FRAMEWORK = {
     "EXCEPTION_HANDLER": "task_scheduler.utils.exception_handler.custom_exception_handler"
 }
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "loggers": {
+        "task_scheduler": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "webhook_timer": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}
+
 ROOT_URLCONF = "task_scheduler.urls"
 
 WSGI_APPLICATION = "task_scheduler.wsgi.application"
 
+APPEND_SLASH = True
 
 # Celery configuration
 
