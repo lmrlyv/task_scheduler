@@ -1,15 +1,15 @@
-x-django-app-env: &django-app-env
-  environment:
-    - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
-    - CELERY_BROKER_HOST=${CELERY_BROKER_HOST}
-    - CELERY_BROKER_PORT=${CELERY_BROKER_PORT}
-    - CELERY_BROKER_USER=${CELERY_BROKER_USER}
-    - CELERY_BROKER_PASSWORD=${CELERY_BROKER_PASSWORD}
-    - DB_HOST=${DB_HOST}
-    - DB_PORT=${DB_PORT}
-    - DB_NAME=${DB_NAME}
-    - DB_USER=${DB_USER}
-    - DB_PASSWORD=${DB_PASSWORD}
+x-django-app-env: &django-app-env-block
+  environment: &django-app-env-objects
+    DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+    CELERY_BROKER_HOST: ${CELERY_BROKER_HOST}
+    CELERY_BROKER_PORT: ${CELERY_BROKER_PORT}
+    CELERY_BROKER_USER: ${CELERY_BROKER_USER}
+    CELERY_BROKER_PASSWORD: ${CELERY_BROKER_PASSWORD}
+    DB_HOST: ${DB_HOST}
+    DB_PORT: ${DB_PORT}
+    DB_NAME: ${DB_NAME}
+    DB_USER: ${DB_USER}
+    DB_PASSWORD: ${DB_PASSWORD}
 
 services:
   web:
@@ -18,44 +18,69 @@ services:
       args:
         - ENVIRONMENT=dev
     image: django_web:dev
-    container_name: django_web
+    container_name: web
     ports:
       - "8000:8000"
-    <<: *django-app-env
+    <<: *django-app-env-block
     volumes:
       - .:/task_scheduler
     depends_on:
-      - db
-      - rabbitmq
+      db:
+        condition: service_healthy
 
   celery:
     image: django_web:dev
     container_name: celery_worker
     command: celery -A task_scheduler worker --loglevel=info
-    <<: *django-app-env
+    environment:
+      <<: *django-app-env-objects
+      CELERYD_LOG_LEVEL: INFO
     depends_on:
-      - web
+      web:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
     volumes:
       - .:/task_scheduler
 
   db:
-    image: pingcap/tidb:v7.1.6
-    container_name: tidb
+    image: mysql:8.4
+    container_name: mysql
     ports:
-      - "4000:4000"
+      - "${DB_PORT}:3306"
     environment:
-      - MYSQL_ROOT_PASSWORD=test
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-test}
       - MYSQL_DATABASE=${DB_NAME}
       - MYSQL_USER=${DB_USER}
       - MYSQL_PASSWORD=${DB_PASSWORD}
-      - TZ=UTC
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./init_scripts/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql:ro
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      retries: 10
+      timeout: 5s
+      start_period: 10s
 
   rabbitmq:
     image: rabbitmq:4.0.4-management-alpine
     container_name: rabbitmq
     ports:
-      - "5672:5672"
+      - "${CELERY_BROKER_PORT}:5672"
       - "15672:15672"
     environment:
       - RABBITMQ_DEFAULT_USER=${CELERY_BROKER_USER}
       - RABBITMQ_DEFAULT_PASS=${CELERY_BROKER_PASSWORD}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      interval: 10s
+      retries: 10
+      timeout: 5s
+      start_period: 10s
+
+volumes:
+  db_data:
+  rabbitmq_data:
