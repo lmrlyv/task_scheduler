@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
-from django.http import HttpRequest
+from rest_framework.request import Request
 from rest_framework.views import APIView
 
 from task_scheduler.utils.custom_responses import JsonResponseError, JsonResponseSuccess
@@ -63,7 +63,7 @@ class WebhookTimerView(APIView):
             }
     """
 
-    def post(self, request: HttpRequest, *args, **kwargs):
+    def post(self, request: Request, *args, **kwargs):
         data = request.data
         serializer = SetTimerSerializer(data=data)
 
@@ -91,7 +91,7 @@ class WebhookTimerView(APIView):
             status=201,
         )
 
-    def get(self, request, timer_id, *args, **kwargs):
+    def get(self, request: Request, timer_id: str, *args, **kwargs):
         """Retrieve the remaining time for a specific timer.
 
         GET /timer/<timer_id>/
