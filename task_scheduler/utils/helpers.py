@@ -24,28 +24,3 @@ def get_env_var(env_var_name: str, default: str = "", required: bool = False) ->
         raise ConfigError(f"Environment variable '{env_var_name}' is required but not set.")
 
     return value.strip() if value is not None else default
-
-
-def str_to_bool(value: str) -> bool:
-    """Convert a string to a boolean.
-
-    Args:
-        value (str): The string to convert.
-
-    Raises:
-        ValueError: If the value cannot be converted to a boolean.
-
-    Returns:
-        bool: The boolean representation of the string.
-    """
-    if not isinstance(value, str):
-        raise ValueError(f"Expected a string, got {type(value).__name__}.")
-
-    value = value.strip().lower()
-
-    if value in {"true", "yes", "1"}:
-        return True
-    elif value in {"false", "no", "0"}:
-        return False
-    else:
-        raise ValueError(f"Cannot convert '{value}' to a boolean.")
