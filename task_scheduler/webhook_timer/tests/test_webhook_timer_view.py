@@ -53,9 +53,9 @@ class WebhookTimerViewTests(TestCase):
         self.assertTrue(response_data["success"])
         self.assertEqual(response_data["message"], "Timer is created")
         self.assertIn("timer_id", response_data["data"])
-        self.assertIn("seconds_left", response_data["data"])
+        self.assertIn("time_left", response_data["data"])
         self.assertEqual(response_data["data"]["timer_id"], timer_id)
-        self.assertEqual(response_data["data"]["seconds_left"], 5415)
+        self.assertEqual(response_data["data"]["time_left"], 5415)
 
         self.assertEqual(mock_start_timer_apply_async.call_count, 1)
         self.assertTrue(WebhookTimer.objects.filter(id=timer_id).exists())
@@ -127,8 +127,8 @@ class WebhookTimerViewTests(TestCase):
             response_data = response.json()
             self.assertTrue(response_data["success"])
             self.assertEqual("Timer is found", response_data["message"])
-            self.assertIn("seconds_left", response_data["data"])
-            self.assertEqual(response_data["data"]["seconds_left"], 110)
+            self.assertIn("time_left", response_data["data"])
+            self.assertEqual(response_data["data"]["time_left"], 110)
 
             # Play timer a little more than the rest of the time left and assert the response
             frozen_datetime.tick(delta=timedelta(seconds=130))
@@ -139,8 +139,8 @@ class WebhookTimerViewTests(TestCase):
             response_data = response.json()
             self.assertTrue(response_data["success"])
             self.assertEqual("Timer is found", response_data["message"])
-            self.assertIn("seconds_left", response_data["data"])
-            self.assertEqual(response_data["data"]["seconds_left"], 0)
+            self.assertIn("time_left", response_data["data"])
+            self.assertEqual(response_data["data"]["time_left"], 0)
 
     def test_get_timer_not_found(self):
         """Test retrieving a timer that does not exist."""

@@ -47,7 +47,7 @@ class WebhookTimerView(APIView):
                 "message": "Timer is created",
                 "data": {
                     "timer_id": "a7293427-c147-455e-bf41-ddb36eea4119",
-                    "seconds_left": 5415
+                    "time_left": 5415
                 }
             }
         400 Bad Request:
@@ -87,7 +87,7 @@ class WebhookTimerView(APIView):
 
         return JsonResponseSuccess(
             "Timer is created",
-            {"timer_id": str(timer_id), "seconds_left": expiration_td.total_seconds()},
+            {"timer_id": str(timer_id), "time_left": expiration_td.total_seconds()},
             status=201,
         )
 
@@ -111,7 +111,7 @@ class WebhookTimerView(APIView):
                     "success": true,
                     "message": "Timer is found",
                     "data": {
-                        "seconds_left": 120
+                        "time_left": 120
                     }
                 }
             400 Bad Request:
@@ -142,8 +142,8 @@ class WebhookTimerView(APIView):
             return JsonResponseError("Timer not found", "No timer matches the given id", status=404)
 
         # The expired_at datetime object is in UTC
-        seconds_left = (webhook_timer.expires_at - datetime.now(timezone.utc)).total_seconds()
-        if seconds_left < 0:
-            seconds_left = 0
+        time_left = (webhook_timer.expires_at - datetime.now(timezone.utc)).total_seconds()
+        if time_left < 0:
+            time_left = 0
 
-        return JsonResponseSuccess("Timer is found", {"seconds_left": int(seconds_left)})
+        return JsonResponseSuccess("Timer is found", {"time_left": int(time_left)})
