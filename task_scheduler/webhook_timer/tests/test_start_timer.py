@@ -18,6 +18,8 @@ class CeleryTaskStartTimerTests(TestCase):
     ):
         """Test start_timer task successfully triggers webhook and updates db."""
         timer_id = uuid4()
+        webhook_url = "https://example.com/webhook"
+        expected_payload_to_url = {"id": timer_id}
 
         # Mock the request.id property of the celery task object
         mock_celery_request = MagicMock()
@@ -29,14 +31,15 @@ class CeleryTaskStartTimerTests(TestCase):
         mock_http_response.ok = True
         mock_requests_post.return_value = mock_http_response
 
-        WebhookTimer.objects.create(
-            id=timer_id, url="https://example.com/webhook", expires_at=datetime.now()
-        )
+        WebhookTimer.objects.create(id=timer_id, url=webhook_url, expires_at=datetime.now())
+
+        start_timer()
+
+        # Assert the payload sent to webhook url
+        self.assertEqual(mock_requests_post.call_count, 1)
+        mock_requests_post.assert_called_with(webhook_url, json=expected_payload_to_url)
 
         # Assert if the task entry in the database gets updated after executing start_timer task
-        start_timer()
-        self.assertEqual(mock_requests_post.call_count, 1)
-
         webhook_timer = WebhookTimer.objects.get(id=timer_id)
         self.assertTrue(webhook_timer.is_url_called)
 
