@@ -2,10 +2,10 @@ import logging
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
+from django.http import JsonResponse
 from rest_framework.request import Request
 from rest_framework.views import APIView
 
-from task_scheduler.utils.custom_responses import JsonResponseError, JsonResponseSuccess
 from task_scheduler.webhook_timer.models import WebhookTimer
 from task_scheduler.webhook_timer.serializers import SetTimerSerializer
 from task_scheduler.webhook_timer.tasks import start_timer
@@ -43,22 +43,16 @@ class WebhookTimerView(APIView):
             Description: The timer is successfully created, and details about the timer are returned.
             Example:
             {
-                "success": true,
-                "message": "Timer is created",
-                "data": {
-                    "timer_id": "a7293427-c147-455e-bf41-ddb36eea4119",
-                    "time_left": 5415
-                }
+                "id": "a7293427-c147-455e-bf41-ddb36eea4119",
+                "time_left": 5415
             }
         400 Bad Request:
             Description: The input data is invalid (e.g., negative duration values or invalid URL).
             Example:
             {
-                "success": false,
-                "message": "Validation error",
-                "details": {
-                    "url": ["Enter a valid URL."],
-                    "hours": ["Ensure this value is greater than or equal to 0."]
+                "error": {
+                    "hours": ["Ensure this value is greater than or equal to 0."],
+                    "url": ["Enter a valid URL."]
                 }
             }
     """
@@ -68,7 +62,7 @@ class WebhookTimerView(APIView):
         serializer = SetTimerSerializer(data=data)
 
         if not serializer.is_valid():
-            return JsonResponseError("Validation error", serializer.errors, status=400)
+            return JsonResponse({"error": serializer.errors}, status=400)
 
         hours = int(data["hours"])
         minutes = int(data["minutes"])
@@ -85,9 +79,8 @@ class WebhookTimerView(APIView):
         timer_id = task.id
         WebhookTimer.objects.create(id=timer_id, url=url, expires_at=expires_at)
 
-        return JsonResponseSuccess(
-            "Timer is created",
-            {"timer_id": str(timer_id), "time_left": expiration_td.total_seconds()},
+        return JsonResponse(
+            {"id": str(timer_id), "time_left": int(expiration_td.total_seconds())},
             status=201,
         )
 
@@ -108,42 +101,35 @@ class WebhookTimerView(APIView):
                 Description: The timer is found, and the remaining time is returned.
                 Example:
                 {
-                    "success": true,
-                    "message": "Timer is found",
-                    "data": {
-                        "time_left": 120
-                    }
+                    "id": "f7ac3ff6-74a5-44d3-9dc1-e0dcc55d97ab",
+                    "time_left": 120
                 }
             400 Bad Request:
                 Description: The timer_id is invalid (not a UUID).
                 Example:
                 {
-                    "success": false,
-                    "message": "Validation error",
-                    "details": "The timer_id must be UUID, but given 'invalid-uuid'"
+                    "error": "The timer_id must be UUID, but given 'invalid-uuid'"
                 }
             404 Not Found:
                 Description: No timer with the specified ID exists in the database.
                 Example:
                 {
-                    "success": false,
-                    "message": "Timer not found",
-                    "details": "No timer matches the given id"
+                    "error": "No timer matches the given id"
                 }
         """
         try:
             timer_id = UUID(timer_id)
             webhook_timer = WebhookTimer.objects.get(id=timer_id)
         except ValueError:
-            return JsonResponseError(
-                "Validation error", f"The timer_id must be UUID, but given '{timer_id}'", status=400
+            return JsonResponse(
+                {"error": f"The timer_id must be UUID, but given '{timer_id}'"}, status=400
             )
         except WebhookTimer.DoesNotExist:
-            return JsonResponseError("Timer not found", "No timer matches the given id", status=404)
+            return JsonResponse({"error": "No timer matches the given id"}, status=404)
 
         # The expired_at datetime object is in UTC
         time_left = (webhook_timer.expires_at - datetime.now(timezone.utc)).total_seconds()
         if time_left < 0:
             time_left = 0
 
-        return JsonResponseSuccess("Timer is found", {"time_left": int(time_left)})
+        return JsonResponse({"id": timer_id, "time_left": int(time_left)}, status=200)

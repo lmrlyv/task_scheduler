@@ -17,7 +17,7 @@ class CeleryTaskStartTimerTests(TestCase):
         self, mock_celery_context: MagicMock, mock_requests_post: MagicMock
     ):
         """Test start_timer task successfully triggers webhook and updates db."""
-        timer_id = uuid4()
+        timer_id = str(uuid4())
         webhook_url = "https://example.com/webhook"
         expected_payload_to_url = {"id": timer_id}
 
@@ -53,7 +53,7 @@ class CeleryTaskStartTimerTests(TestCase):
         mock_start_timer_retry: MagicMock,
     ):
         """Test start_timer task retries if triggering webhook fails."""
-        timer_id = uuid4()
+        timer_id = str(uuid4())
 
         # Mock the request.id property of the celery task object
         mock_celery_request = MagicMock()
@@ -82,7 +82,7 @@ class CeleryTaskStartTimerTests(TestCase):
         self, mock_celery_context: MagicMock, mock_trigger_webhook: MagicMock
     ):
         """Test start_timer task stops proceeding if there is no db entry found."""
-        timer_id = uuid4()
+        timer_id = str(uuid4())
 
         # Mock the request.id property of the celery task object
         mock_celery_request = MagicMock()

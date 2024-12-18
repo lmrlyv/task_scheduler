@@ -50,12 +50,10 @@ class WebhookTimerViewTests(TestCase):
 
         # Assert data returned in the response object
         response_data = response.json()
-        self.assertTrue(response_data["success"])
-        self.assertEqual(response_data["message"], "Timer is created")
-        self.assertIn("timer_id", response_data["data"])
-        self.assertIn("time_left", response_data["data"])
-        self.assertEqual(response_data["data"]["timer_id"], timer_id)
-        self.assertEqual(response_data["data"]["time_left"], 5415)
+        self.assertIn("id", response_data)
+        self.assertIn("time_left", response_data)
+        self.assertEqual(response_data["id"], timer_id)
+        self.assertEqual(response_data["time_left"], 5415)
 
         self.assertEqual(mock_start_timer_apply_async.call_count, 1)
         self.assertTrue(WebhookTimer.objects.filter(id=timer_id).exists())
@@ -74,8 +72,7 @@ class WebhookTimerViewTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
         response_data = response.json()
-        self.assertFalse(response_data["success"])
-        self.assertEqual(response_data["message"], "Validation error")
+        self.assertIn("error", response_data)
 
         error_object = response_data["error"]
         self.assertIsInstance(error_object, dict)
@@ -96,8 +93,7 @@ class WebhookTimerViewTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
         response_data = response.json()
-        self.assertFalse(response_data["success"])
-        self.assertIn("Validation error", response_data["message"])
+        self.assertIn("error", response_data)
 
         error_object = response_data["error"]
         self.assertIsInstance(error_object, dict)
@@ -112,7 +108,7 @@ class WebhookTimerViewTests(TestCase):
 
         # Freeze time at the current time
         with freeze_time(current_datetime) as frozen_datetime:
-            timer_id = uuid4()
+            timer_id = str(uuid4())
             expires_at = current_datetime + timedelta(seconds=120)
             WebhookTimer.objects.create(
                 id=timer_id, url="https://example.com/webhook", expires_at=expires_at
@@ -125,10 +121,10 @@ class WebhookTimerViewTests(TestCase):
             self.assertEqual(response.status_code, status.HTTP_200_OK)
 
             response_data = response.json()
-            self.assertTrue(response_data["success"])
-            self.assertEqual("Timer is found", response_data["message"])
-            self.assertIn("time_left", response_data["data"])
-            self.assertEqual(response_data["data"]["time_left"], 110)
+            self.assertIn("id", response_data)
+            self.assertIn("time_left", response_data)
+            self.assertEqual(response_data["id"], timer_id)
+            self.assertEqual(response_data["time_left"], 110)
 
             # Play timer a little more than the rest of the time left and assert the response
             frozen_datetime.tick(delta=timedelta(seconds=130))
@@ -137,10 +133,10 @@ class WebhookTimerViewTests(TestCase):
             self.assertEqual(response.status_code, status.HTTP_200_OK)
 
             response_data = response.json()
-            self.assertTrue(response_data["success"])
-            self.assertEqual("Timer is found", response_data["message"])
-            self.assertIn("time_left", response_data["data"])
-            self.assertEqual(response_data["data"]["time_left"], 0)
+            self.assertIn("id", response_data)
+            self.assertIn("time_left", response_data)
+            self.assertEqual(response_data["id"], timer_id)
+            self.assertEqual(response_data["time_left"], 0)
 
     def test_get_timer_not_found(self):
         """Test retrieving a timer that does not exist."""
@@ -148,8 +144,7 @@ class WebhookTimerViewTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
         response_data = response.json()
-        self.assertFalse(response_data["success"])
-        self.assertEqual("Timer not found", response_data["message"])
+        self.assertIn("error", response_data)
         self.assertIn("No timer matches the given id", response_data["error"])
 
     def test_get_timer_invalid_id(self):
@@ -158,6 +153,5 @@ class WebhookTimerViewTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
         response_data = response.json()
-        self.assertFalse(response_data["success"])
-        self.assertEqual("Validation error", response_data["message"])
+        self.assertIn("error", response_data)
         self.assertIn("The timer_id must be UUID", response_data["error"])
