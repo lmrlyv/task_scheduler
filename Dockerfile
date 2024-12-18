@@ -22,6 +22,6 @@ COPY pyproject.toml Pipfile Pipfile.lock manage.py ${ROOT_PATH}/
 
 WORKDIR ${ROOT_PATH}
 
-RUN [ "${ENVIRONMENT}" == "dev" ] && pipenv install --dev --system || pipenv install --system
+RUN test "${ENVIRONMENT}" = "dev" && pipenv install --dev --system || pipenv install --system
 
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
