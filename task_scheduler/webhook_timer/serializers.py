@@ -14,8 +14,9 @@ class SetTimerSerializer(Serializer):
         seconds (IntegerField): The number of seconds for the timer. Must be a non-negative integer.
         url (URLField): The URL to which the webhook will be sent when the timer expires.
 
-    Overloading Methods:
-        validate(data): Custom validation to ensure the total timer duration is greater than 0 seconds.
+    Overriding Methods:
+        validate(data): Custom validation to ensure the total timer duration is greater than 0
+            seconds.
     """
 
     hours = IntegerField(min_value=0, required=True)

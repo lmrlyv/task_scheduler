@@ -12,6 +12,7 @@ from task_scheduler.webhook_timer.models import WebhookTimer
 
 
 class WebhookTimerViewTests(TestCase):
+
     def setUp(self):
         self.client = APIClient()
 

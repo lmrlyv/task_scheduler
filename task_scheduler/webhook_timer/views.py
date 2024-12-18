@@ -15,49 +15,51 @@ logger = logging.getLogger("webhook_timer")
 
 
 class WebhookTimerView(APIView):
-    """
-    Create a new timer for triggering a webhook.
-
-    POST /timer
-
-    Description:
-        This endpoint allows the user to create a new timer that triggers a webhook when it
-        expires.
-
-    Request Body:
-        hours (int): The number of hours for the timer. Must be a non-negative integer.
-        minutes (int): The number of minutes for the timer. Must be a non-negative integer.
-        seconds (int): The number of seconds for the timer. Must be a non-negative integer.
-        url (str): The webhook URL to be triggered when the timer expires. Must be a valid URL.
-
-        Example:
-        {
-            "hours": 1,
-            "minutes": 30,
-            "seconds": 15,
-            "url": "https://example.com/webhook"
-        }
-
-    Responses:
-        201 Created:
-            Description: The timer is successfully created, and details about the timer are returned.
-            Example:
-            {
-                "id": "a7293427-c147-455e-bf41-ddb36eea4119",
-                "time_left": 5415
-            }
-        400 Bad Request:
-            Description: The input data is invalid (e.g., negative duration values or invalid URL).
-            Example:
-            {
-                "error": {
-                    "hours": ["Ensure this value is greater than or equal to 0."],
-                    "url": ["Enter a valid URL."]
-                }
-            }
-    """
 
     def post(self, request: Request, *args, **kwargs):
+        """
+        Create a new timer for triggering a webhook.
+
+        POST /timer
+
+        Description:
+            This endpoint allows the user to create a new timer that triggers a webhook when it
+            expires.
+
+        Request Body:
+            hours (int): The number of hours for the timer. Must be a non-negative integer.
+            minutes (int): The number of minutes for the timer. Must be a non-negative integer.
+            seconds (int): The number of seconds for the timer. Must be a non-negative integer.
+            url (str): The webhook URL to be triggered when the timer expires. Must be a valid URL.
+
+            Example:
+            {
+                "hours": 1,
+                "minutes": 30,
+                "seconds": 15,
+                "url": "https://example.com/webhook"
+            }
+
+        Responses:
+            201 Created:
+                Description: The timer is successfully created, and details about the timer are
+                    returned.
+                Example:
+                {
+                    "id": "a7293427-c147-455e-bf41-ddb36eea4119",
+                    "time_left": 5415
+                }
+            400 Bad Request:
+                Description: The input data is invalid (e.g., negative duration values or invalid
+                    URL).
+                Example:
+                {
+                    "error": {
+                        "hours": ["Ensure this value is greater than or equal to 0."],
+                        "url": ["Enter a valid URL."]
+                    }
+                }
+        """
         data = request.data
         serializer = SetTimerSerializer(data=data)
 
@@ -129,7 +131,6 @@ class WebhookTimerView(APIView):
 
         # The expired_at datetime object is in UTC
         time_left = (webhook_timer.expires_at - datetime.now(timezone.utc)).total_seconds()
-        if time_left < 0:
-            time_left = 0
+        time_left = max(time_left, 0)
 
         return JsonResponse({"id": timer_id, "time_left": int(time_left)}, status=200)
