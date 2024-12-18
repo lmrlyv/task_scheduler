@@ -11,6 +11,11 @@ logger = logging.getLogger("task_scheduler")
 
 
 def custom_exception_handler(exc, context):
+    """Custom exception handler for Django REST Framework.
+
+    This function handles exceptions raised in the application and customizes the response format.
+    It ensures the consistent structure from the endpoints.
+    """
     response = exception_handler(exc, context)
 
     if response is None:
