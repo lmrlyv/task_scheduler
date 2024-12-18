@@ -43,3 +43,11 @@ Task Scheduler is a lightweight service designed to manage and execute scheduled
     ```
 
 4.  Access the web app at `http://localhost:8000`.
+
+
+#### Running Automated Tests
+
+A total of 9 tests have been implemented. To run them, use the following command:
+```sh
+docker-compose exec -it web python manage.py test
+```
