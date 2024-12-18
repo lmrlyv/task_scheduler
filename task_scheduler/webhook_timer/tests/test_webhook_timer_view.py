@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 from django.test import TestCase
@@ -24,8 +25,16 @@ class WebhookTimerViewTests(TestCase):
         }
 
     @freeze_time("2025-01-01 00:00:00")
-    def test_set_timer_success(self):
+    @patch("task_scheduler.webhook_timer.tasks.start_timer.apply_async")
+    def test_set_timer_success(self, mock_start_timer_apply_async: MagicMock):
         """Test setting a timer with valid input."""
+        timer_id = str(uuid4())
+
+        # Mock the start_timer celery task's apply_async method
+        mock_celery_task_object = MagicMock()
+        mock_celery_task_object.id = timer_id
+        mock_start_timer_apply_async.return_value = mock_celery_task_object
+
         payload = {
             "hours": 1,
             "minutes": 30,
@@ -45,9 +54,10 @@ class WebhookTimerViewTests(TestCase):
         self.assertEqual(response_data["message"], "Timer is created")
         self.assertIn("timer_id", response_data["data"])
         self.assertIn("seconds_left", response_data["data"])
+        self.assertEqual(response_data["data"]["timer_id"], timer_id)
         self.assertEqual(response_data["data"]["seconds_left"], 5415)
 
-        timer_id = response_data["data"]["timer_id"]
+        self.assertEqual(mock_start_timer_apply_async.call_count, 1)
         self.assertTrue(WebhookTimer.objects.filter(id=timer_id).exists())
 
         # Assert the created timer has the correct data
