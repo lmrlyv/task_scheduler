@@ -54,7 +54,7 @@ def start_timer(self):
             )
             return
 
-        __trigger_webhook(url)
+        __trigger_webhook(url, timer_id)
         __mark_webhook_triggered_in_db(webhook_timer)
 
     except WebhookTimer.DoesNotExist:
@@ -67,9 +67,11 @@ def start_timer(self):
             logger.error(f"Max retries exceeded for timer_id: {timer_id}")
 
 
-def __trigger_webhook(url: str):
+def __trigger_webhook(url: str, timer_id: str):
     logger.debug(f"Firing webhook to url '{url}'")
-    response = requests.post(url)
+
+    payload = {"id": timer_id}
+    response = requests.post(url, json=payload)
 
     if response.ok:
         logger.info(f"Successfully fired a webhook to '{url}'")
