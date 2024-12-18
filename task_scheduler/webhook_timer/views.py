@@ -43,7 +43,7 @@ class WebhookTimerView(APIView):
             Description: The timer is successfully created, and details about the timer are returned.
             Example:
             {
-                "status": "success",
+                "success": true,
                 "message": "Timer is created",
                 "data": {
                     "timer_id": "a7293427-c147-455e-bf41-ddb36eea4119",
@@ -54,7 +54,7 @@ class WebhookTimerView(APIView):
             Description: The input data is invalid (e.g., negative duration values or invalid URL).
             Example:
             {
-                "status": "error",
+                "success": false,
                 "message": "Validation error",
                 "details": {
                     "url": ["Enter a valid URL."],
@@ -108,7 +108,7 @@ class WebhookTimerView(APIView):
                 Description: The timer is found, and the remaining time is returned.
                 Example:
                 {
-                    "status": "success",
+                    "success": true,
                     "message": "Timer is found",
                     "data": {
                         "seconds_left": 120
@@ -118,7 +118,7 @@ class WebhookTimerView(APIView):
                 Description: The timer_id is invalid (not a UUID).
                 Example:
                 {
-                    "status": "error",
+                    "success": false,
                     "message": "Validation error",
                     "details": "The timer_id must be UUID, but given 'invalid-uuid'"
                 }
@@ -126,7 +126,7 @@ class WebhookTimerView(APIView):
                 Description: No timer with the specified ID exists in the database.
                 Example:
                 {
-                    "status": "error",
+                    "success": false,
                     "message": "Timer not found",
                     "details": "No timer matches the given id"
                 }
