@@ -82,6 +82,6 @@ def __trigger_webhook(url: str):
 
 
 def __mark_webhook_triggered_in_db(webhook_timer: WebhookTimer):
-    webhook_timer.is_url_called = True
-    webhook_timer.save()
-    transaction.commit()
+    with transaction.atomic():
+        webhook_timer.is_url_called = True
+        webhook_timer.save()
