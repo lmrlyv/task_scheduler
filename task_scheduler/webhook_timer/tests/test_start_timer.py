@@ -72,3 +72,20 @@ class CeleryTaskStartTimerTests(TestCase):
         # Assert if the task gets retried after triggering webhook fails
         with self.assertRaises(Retry):
             start_timer()
+
+    @patch("task_scheduler.webhook_timer.tasks.__trigger_webhook")
+    @patch("celery.app.task.Context")
+    def test_start_timer_no_db_entry(
+        self, mock_celery_context: MagicMock, mock_trigger_webhook: MagicMock
+    ):
+        """Test start_timer task stops proceeding if there is no db entry found."""
+        timer_id = uuid4()
+
+        # Mock the request.id property of the celery task object
+        mock_celery_request = MagicMock()
+        mock_celery_request.id = timer_id
+        mock_celery_context.return_value = mock_celery_request
+
+        # With no entry in the database, test if the trigger_webhook function gets called
+        start_timer()
+        self.assertEqual(mock_trigger_webhook.call_count, 0)
